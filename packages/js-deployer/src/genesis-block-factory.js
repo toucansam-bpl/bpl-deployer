@@ -1,4 +1,4 @@
-const { Bignum, crypto, TransactionSerializer, } = require('@arkecosystem/crypto')
+const { Bignum, crypto, } = require('@arkecosystem/crypto')
 const { createHash } = require('crypto')
 const { pipe } = require('ramda')
 
@@ -12,9 +12,9 @@ const sortByType = transactions =>
       : a.type - b.type
   })
 
-const createUnsignedBlock = (genesisWallet, timestamp) => transactions => 
+const createUnsignedBlock = (genesisWallet, timestamp) => transactions =>
   transactions.reduce((block, transaction) => {
-    const bytes = TransactionSerializer.getBytes(transaction)
+    const bytes = crypto.getBytes(transaction)
     block.payloadHash.update(bytes)
     return {
       ... block,

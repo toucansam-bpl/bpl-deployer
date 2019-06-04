@@ -169,8 +169,8 @@ networkConfig = updateConfig('network.json', networkConfig, cryptoNetworkPath)
 // const genesis = new GenesisBlockBuilder(networkConfig, options).generate()
 const genesis = createGenesisBlock({
   delegateCount: options.forgers,
-  passphraseFilePath: path.resolve('~/bpl_mc_passphrases.txt'),
-  keyMapFilePath: path.resolve(key-user-map.txt),
+  passphraseFilePath: path.resolve(os.homedir(), 'bpl_mc_passphrases.txt'),
+  keyMapFilePath: path.resolve(os.homedir(), 'key-user-map.txt'),
 })
 networkConfig.nethash = genesis.genesisBlock.payloadHash
 
