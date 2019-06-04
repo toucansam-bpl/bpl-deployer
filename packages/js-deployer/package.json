@@ -10,7 +10,10 @@
     "ark:deployer": "./bin/deployer"
   },
   "scripts": {
-    "start": "./bin/deployer"
+    "start": "./bin/deployer",
+    "test": "nyc riteway src/**/*-rt.js | tap-nirvana",
+    "test:functional": "nyc riteway src/**/*-fun.js | tap-nirvana",
+    "watch": "watch 'npm run -s test' src"
   },
   "dependencies": {
     "@arkecosystem/crypto": "~0.2",
@@ -20,10 +23,18 @@
     "envfile": "^2.3.0",
     "expand-home-dir": "0.0.3",
     "fs-extra": "^7.0.1",
+    "gen-readlines": "^0.2.0",
     "joi": "^14.3.0",
     "lodash.set": "^4.3.2",
     "pino": "^5.9.0",
-    "pino-pretty": "^2.3.0"
+    "pino-pretty": "^2.3.0",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "nyc": "^14.1.1",
+    "riteway": "^6.0.3",
+    "tap-nirvana": "^1.1.0",
+    "watch": "^1.0.2"
   },
   "publishConfig": {
     "access": "public"

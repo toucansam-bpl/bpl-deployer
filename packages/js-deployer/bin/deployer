@@ -13,6 +13,9 @@ const logger = require('../lib/utils/logger')
 const updateConfig = require('../lib/utils/update-config')
 const writeEnv = require('../lib/utils/write-env')
 
+const createGenesisBlock = require('../src/genesis-block-generator')
+
+
 commander
   .version(require('../package.json').version)
   .option('--network <value>', 'Network to initially copy', 'mainnet')
@@ -159,7 +162,12 @@ let milestones = [
 // Update network config
 networkConfig = updateConfig('network.json', networkConfig, cryptoNetworkPath)
 
-const genesis = new GenesisBlockBuilder(networkConfig, options).generate()
+// const genesis = new GenesisBlockBuilder(networkConfig, options).generate()
+const genesis = createGenesisBlock({
+  delegateCount: options.forgers,
+  passphraseFilePath: path.resolve('~/bpl_mc_passphrases.txt'),
+  keyMapFilePath: path.resolve(key-user-map.txt),
+})
 networkConfig.nethash = genesis.genesisBlock.payloadHash
 
 updateConfig('network.json', networkConfig, cryptoNetworkPath)
