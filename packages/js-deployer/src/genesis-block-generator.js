@@ -1,4 +1,4 @@
-const { Bignum, crypto, } = require('@arkecosystem/crypto')
+const { Bignum, client, crypto, } = require('@arkecosystem/crypto')
 
 const generateSequence = require('./sequence-generator')
 
