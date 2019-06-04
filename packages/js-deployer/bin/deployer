@@ -42,7 +42,7 @@ commander
   .option('--peers <value>', 'Comma separated list of peer IPs')
   .option('--prefixHash <value>', 'Address Prefix Hash [28]', 28)
   .option('--transactionsPerBlock <value>', 'Max Transaction count per Block [50]', 50)
-  .option('--wifPrefix <value>', 'Prefix for generating a WIF [rand(1, 255)]', getRandomNumber(1, 255))
+  .option('--wifPrefix <value>', 'Prefix for generating a WIF [rand(1, 255)]', 170) //getRandomNumber(1, 255))
   .option('--totalPremine <value>', 'Tokens added to genesis wallet [2100000000000000 (21 million)]', '2100000000000000')
   .option('--overwriteConfig', 'Overwrite current deployer config files [off]', false)
   .option('--configPath <value>', 'Deployer config path destination')
@@ -121,6 +121,10 @@ fs.copySync(oldCryptoNetworkPath, cryptoNetworkPath)
 let networkConfig = {
   name: options.network,
   messagePrefix: `${options.token} message:\n`,
+  bip32: {
+    "public": 46090600,
+    "private": 46089520,
+  },
   pubKeyHash: options.prefixHash,
   wif: options.wifPrefix,
   client: {
