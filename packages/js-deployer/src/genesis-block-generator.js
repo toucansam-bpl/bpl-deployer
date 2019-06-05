@@ -43,6 +43,7 @@ const createTransferTransaction = senderWallet => ({ address, balance }) => {
     .transfer()
     .recipientId(address)
     .amount(balance)
+    .vendorField('v2 balance migration')
     .network(25)
     .sign(senderWallet.passphrase)
 
