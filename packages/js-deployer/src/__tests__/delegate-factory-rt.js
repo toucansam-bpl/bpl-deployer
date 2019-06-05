@@ -79,20 +79,20 @@ describe('delegate factory, when creating delegates from a file', async assert =
         senderPublicKey: '03af35b6ea06b9c4cdb426bcd685feb097103aae87d645ceaf66eee9578cbd2f4a',
         asset: {
           delegate: {
-            username: 'TEST_USER_1',
+            username: 'test_user_1',
             publicKey: "03af35b6ea06b9c4cdb426bcd685feb097103aae87d645ceaf66eee9578cbd2f4a",
           }
         },
-        signature: '3044022030b308bee0869c538a547d5ee1985087e021b884e0b744e15f4ebe3ecfb036a102207acf9a1b5119ab9c5c21d6ddc06eac4a7d021d85eb3ebf193016eb79df876a32',
+        signature: '304402207bfccddcc7a89bcca0592c9d33b2546c8f1ee0d7b841fdadc890bb32a25640f602205de00fcc738ad55ea9d8eb00252e6b0e0fd93ad71cd7c5d54f87c9e58407ff1f',
         senderId: 'BC4Jgv5SMwdwEZPYcnHcLvNxxKtKDEkSSN',
-        id: '89cd805338f2a60d91ed7b7bf3dce7d9571b7af3c74df4c43de4cbe87015dbce'
+        id: '66e1e46f5cc9992b51578537a4166d795174ed5b7c95f86b3c70779118f35227'
       },
       keys: {
         compressed: true,
         privateKey: 'd25f628c4be9edfe1277cbc301e1d96aea822bdea750cfc2deb74fcf4ecde35c',
         publicKey: '03af35b6ea06b9c4cdb426bcd685feb097103aae87d645ceaf66eee9578cbd2f4a',
       },
-      username: 'TEST_USER_1',
+      username: 'test_user_1',
     }
   })
 
@@ -115,20 +115,20 @@ describe('delegate factory, when creating delegates from a file', async assert =
         senderPublicKey: '038aca101b5615e3495bdfbda084cc5f0c6ccbc8345e097db5bb649c827e0ae011',
         asset: {
           delegate: {
-            username: 'TEST_USER_2',
+            username: 'test_user_2',
             publicKey: "038aca101b5615e3495bdfbda084cc5f0c6ccbc8345e097db5bb649c827e0ae011",
           }
         },
-        signature: '3045022100a2f3c0c4b2f6acb1072ea26418b0de2cddb62467d8045fbe8916b7a5fc684039022053e66c8bcf9c5ab454407d2fedbab147c36df4aec7ef279342c25f92f2d59baa',
+        signature: '3045022100adf7bc663d06a41d27d685555f1bde80647d40b2612d177d81ff873e99ecedf602206356b2a402f7234bfbf9bf4ba885b01741d060154cb5acf4ac26a06f42cec3db',
         senderId: 'B5qr7KqwXj987ufS49yzE8tTkvmcwbSXc2',
-        id: '16a0ac174b8da8156b079df78612cc79c4d215a3b94a14ccfeb764e0cc8db8f8'
+        id: '6a525b0d357164011a7dac9fdda8193042057c903ebc7b2d1e1614ae6e5979cf'
       },
       keys: {
         compressed: true,
         privateKey: '206e5dde19d60c6e151c38a232cb1941bedf6df89882941bc5f28a3cd49e75ed',
         publicKey: '038aca101b5615e3495bdfbda084cc5f0c6ccbc8345e097db5bb649c827e0ae011',
       },
-      username: 'TEST_USER_2',
+      username: 'test_user_2',
     }
   })
 })

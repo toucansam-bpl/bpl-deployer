@@ -54,7 +54,7 @@ describe('username generator with a supplied filename', async assert => {
       keys: {
         publicKey: '03af35b6ea06b9c4cdb426bcd685feb097103aae87d645ceaf66eee9578cbd2f4a',
       },
-      username: 'TEST_USER_1'
+      username: 'test_user_1'
     },
   })
 
@@ -70,7 +70,7 @@ describe('username generator with a supplied filename', async assert => {
       keys: {
         publicKey: '038aca101b5615e3495bdfbda084cc5f0c6ccbc8345e097db5bb649c827e0ae011',
       },
-      username: 'TEST_USER_2'
+      username: 'test_user_2'
     },
   })
 
