@@ -6,12 +6,13 @@ const generateGenesisBlock = require('../genesis-block-generator')
 
 describe('genesis block generator when generating a genesis block from a file with 5 passphrases', async assert => {
   const genesisBlock = generateGenesisBlock({
+    addressBalanceFilePath: resolve(__dirname, 'address-balances.txt'),
     delegateCount: 10,
     passphraseFilePath: resolve(__dirname, 'five-passphrases.txt'),
     keyMapFilePath: resolve(__dirname, 'five-passphrase-keymap.txt'),
   })
-  
-  const [first, second, third, fourth, fifth, ...rest] = genesisBlock.delegates.secrets
+
+  const [first, second, third, fourth, fifth, ...rest] = genesisBlock.delegatePassphrases
 
   assert({
     given: 'a genesis block was generated',
