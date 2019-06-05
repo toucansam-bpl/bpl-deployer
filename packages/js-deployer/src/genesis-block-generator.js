@@ -3,13 +3,20 @@ const { Bignum, client, crypto, } = require('@arkecosystem/crypto')
 const generateSequence = require('./sequence-generator')
 
 const readAddressBalanceFile = require('./address-balance-file-reader')
+const readAddressFile = require('./address-file-reader')
 const delegateFactory = require('./delegate-factory')
 const generatePassphrase = require('./passphrase-generator')
 const genesisBlockFactory = require('./genesis-block-factory')
-const readVotingAddressFile = require('./voting-address-file-reader')
 const walletFactory = require('./wallet-factory')
 
-module.exports = ({ delegateCount, passphraseFilePath, keyMapFilePath, addressBalanceFilePath, votingAddressFilePath, }) => {
+module.exports = ({
+        addressBalanceFilePath,
+        delegateCount,
+        delegateRefundAddressFilePath,
+        keyMapFilePath,
+        passphraseFilePath,
+        votingAddressFilePath,
+    }) => {
   const createDelegate = delegateFactory(passphraseFilePath, keyMapFilePath)
   const passphrases = generatePassphrase()
   const createWallet = walletFactory(() => ({ passphrase: passphrases.next().value }))
@@ -19,7 +26,10 @@ module.exports = ({ delegateCount, passphraseFilePath, keyMapFilePath, addressBa
   const balanceTransfers = readAddressBalanceFile(addressBalanceFilePath)
     .map(createTransferTransaction(premineWallet))
 
-  const voteRefunds = readVotingAddressFile(votingAddressFilePath)
+  const delegateRegistrationRefunds = readAddressFile(votingAddressFilePath)
+    .map(createDelegateRegistrationRefundTransaction(premineWallet))
+
+  const voteRefunds = readAddressFile(votingAddressFilePath)
     .map(createVoteRefundTransaction(premineWallet))
 
   const delegates = generateSequence(delegateCount).map(createDelegate)
@@ -30,6 +40,7 @@ module.exports = ({ delegateCount, passphraseFilePath, keyMapFilePath, addressBa
 
   const allTransactions = delegates.map(d => d.transaction)
     .concat(balanceTransfers)
+    .concat(delegateRegistrationRefunds)
     .concat(voteRefunds)
 
   return {
@@ -52,12 +63,25 @@ const createTransferTransaction = senderWallet => ({ address, balance }) => {
   return formatGenesisTransaction(data, senderWallet)
 }
 
+const createDelegateRegistrationRefundTransaction = senderWallet => address => {
+  const { data } = client
+    .getBuilder()
+    .transfer()
+    .recipientId(address)
+    .amount(Bignum(1000000000))
+    .vendorField('v2 delegate registration refund')
+    .network(25)
+    .sign(senderWallet.passphrase)
+
+  return formatGenesisTransaction(data, senderWallet)
+}
+
 const createVoteRefundTransaction = senderWallet => address => {
   const { data } = client
     .getBuilder()
     .transfer()
     .recipientId(address)
-    .amount(Bignum(1))
+    .amount(Bignum(100000000))
     .vendorField('v2 vote refund')
     .network(25)
     .sign(senderWallet.passphrase)
@@ -88,4 +112,13 @@ SELECT a.address, v.votes
      HAVING count(1) % 2 = 1
   ) v
     ON a."publicKey" = v."senderPublicKey";
+*/
+
+/*
+SELECT a.address
+  FROM mem_accounts a
+  JOIN (
+    SELECT "senderPublicKey" FROM transactions WHERE type = 2 AND rawasset NOT LIKE '%BPL_MC_%'
+  ) t
+    ON a."publicKey" = t."senderPublicKey"
 */

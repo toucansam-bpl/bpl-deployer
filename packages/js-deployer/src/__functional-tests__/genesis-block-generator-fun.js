@@ -8,8 +8,9 @@ describe('genesis block generator when generating a genesis block from a file wi
   const genesisBlock = generateGenesisBlock({
     addressBalanceFilePath: resolve(__dirname, 'address-balances.txt'),
     delegateCount: 10,
-    passphraseFilePath: resolve(__dirname, 'five-passphrases.txt'),
+    delegateRefundAddressFilePath: resolve(__dirname, 'delegate-refund-addresses.txt'),
     keyMapFilePath: resolve(__dirname, 'five-passphrase-keymap.txt'),
+    passphraseFilePath: resolve(__dirname, 'five-passphrases.txt'),
     votingAddressFilePath: resolve(__dirname, 'voting-addresses.txt')
   })
 

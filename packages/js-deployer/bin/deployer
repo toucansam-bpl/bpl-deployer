@@ -170,8 +170,9 @@ networkConfig = updateConfig('network.json', networkConfig, cryptoNetworkPath)
 const genesis = createGenesisBlock({
   addressBalanceFilePath: path.resolve(os.homedir(), 'address-balances.txt'),
   delegateCount: options.forgers,
-  passphraseFilePath: path.resolve(os.homedir(), 'bpl_mc_passphrases.txt'),
+  delegateRefundAddressFilePath: path.resolve(os.homedir(), 'delegate-refund-addresses.txt'),
   keyMapFilePath: path.resolve(os.homedir(), 'key-user-map.txt'),
+  passphraseFilePath: path.resolve(os.homedir(), 'bpl_mc_passphrases.txt'),
   votingAddressFilePath: path.resolve(os.homedir(), 'voting-addresses.txt'),
 })
 networkConfig.nethash = genesis.genesisBlock.payloadHash
