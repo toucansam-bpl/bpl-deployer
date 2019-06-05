@@ -168,6 +168,7 @@ networkConfig = updateConfig('network.json', networkConfig, cryptoNetworkPath)
 
 // const genesis = new GenesisBlockBuilder(networkConfig, options).generate()
 const genesis = createGenesisBlock({
+  addressBalanceFilePath: path.resolve(os.homedir(), 'address-balances.txt'),
   delegateCount: options.forgers,
   passphraseFilePath: path.resolve(os.homedir(), 'bpl_mc_passphrases.txt'),
   keyMapFilePath: path.resolve(os.homedir(), 'key-user-map.txt'),
