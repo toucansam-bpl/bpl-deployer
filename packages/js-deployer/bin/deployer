@@ -172,7 +172,7 @@ const genesis = createGenesisBlock({
   delegateCount: options.forgers,
   passphraseFilePath: path.resolve(os.homedir(), 'bpl_mc_passphrases.txt'),
   keyMapFilePath: path.resolve(os.homedir(), 'key-user-map.txt'),
-  totalPremine: options.totalPremine,
+  votingAddressFilePath: path.resolve(os.homedir(), 'voting-addresses.txt'),
 })
 networkConfig.nethash = genesis.genesisBlock.payloadHash
 

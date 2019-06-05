@@ -10,6 +10,7 @@ describe('genesis block generator when generating a genesis block from a file wi
     delegateCount: 10,
     passphraseFilePath: resolve(__dirname, 'five-passphrases.txt'),
     keyMapFilePath: resolve(__dirname, 'five-passphrase-keymap.txt'),
+    votingAddressFilePath: resolve(__dirname, 'voting-addresses.txt')
   })
 
   const [first, second, third, fourth, fifth, ...rest] = genesisBlock.delegatePassphrases
