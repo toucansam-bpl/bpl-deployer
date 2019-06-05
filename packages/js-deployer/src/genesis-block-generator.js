@@ -15,6 +15,7 @@ module.exports = ({
         delegateRefundAddressFilePath,
         keyMapFilePath,
         passphraseFilePath,
+        secondPassphraseRefundAddressFilePath,
         votingAddressFilePath,
     }) => {
   const createDelegate = delegateFactory(passphraseFilePath, keyMapFilePath)
@@ -26,8 +27,11 @@ module.exports = ({
   const balanceTransfers = readAddressBalanceFile(addressBalanceFilePath)
     .map(createTransferTransaction(premineWallet))
 
-  const delegateRegistrationRefunds = readAddressFile(votingAddressFilePath)
+  const delegateRegistrationRefunds = readAddressFile(delegateRefundAddressFilePath)
     .map(createDelegateRegistrationRefundTransaction(premineWallet))
+
+  const secondPassphraseRefunds = readAddressFile(secondPassphraseRefundAddressFilePath)
+    .map(createSecondPassphraseRefundTransaction(premineWallet))
 
   const voteRefunds = readAddressFile(votingAddressFilePath)
     .map(createVoteRefundTransaction(premineWallet))
@@ -41,6 +45,7 @@ module.exports = ({
   const allTransactions = delegates.map(d => d.transaction)
     .concat(balanceTransfers)
     .concat(delegateRegistrationRefunds)
+    .concat(secondPassphraseRefunds)
     .concat(voteRefunds)
 
   return {
@@ -70,6 +75,19 @@ const createDelegateRegistrationRefundTransaction = senderWallet => address => {
     .recipientId(address)
     .amount(Bignum(1000000000))
     .vendorField('v2 delegate registration refund')
+    .network(25)
+    .sign(senderWallet.passphrase)
+
+  return formatGenesisTransaction(data, senderWallet)
+}
+
+const createSecondPassphraseRefundTransaction = senderWallet => address => {
+  const { data } = client
+    .getBuilder()
+    .transfer()
+    .recipientId(address)
+    .amount(Bignum(500000000))
+    .vendorField('v2 second passphrase refund')
     .network(25)
     .sign(senderWallet.passphrase)
 
@@ -121,4 +139,14 @@ SELECT a.address
     SELECT "senderPublicKey" FROM transactions WHERE type = 2 AND rawasset NOT LIKE '%BPL_MC_%'
   ) t
     ON a."publicKey" = t."senderPublicKey"
+*/
+
+/*
+SELECT a.address
+  FROM mem_accounts a
+  JOIN (
+    SELECT "senderPublicKey" FROM transactions WHERE type = 1
+  ) t
+    ON a."publicKey" = t."senderPublicKey"
+;
 */

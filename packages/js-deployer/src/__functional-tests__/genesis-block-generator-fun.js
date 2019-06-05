@@ -11,6 +11,7 @@ describe('genesis block generator when generating a genesis block from a file wi
     delegateRefundAddressFilePath: resolve(__dirname, 'delegate-refund-addresses.txt'),
     keyMapFilePath: resolve(__dirname, 'five-passphrase-keymap.txt'),
     passphraseFilePath: resolve(__dirname, 'five-passphrases.txt'),
+    secondPassphraseFilePath: resolve(__dirname, 'second-passphrase-addresses.txt'),
     votingAddressFilePath: resolve(__dirname, 'voting-addresses.txt')
   })
 

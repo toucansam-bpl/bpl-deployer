@@ -173,6 +173,7 @@ const genesis = createGenesisBlock({
   delegateRefundAddressFilePath: path.resolve(os.homedir(), 'delegate-refund-addresses.txt'),
   keyMapFilePath: path.resolve(os.homedir(), 'key-user-map.txt'),
   passphraseFilePath: path.resolve(os.homedir(), 'bpl_mc_passphrases.txt'),
+  secondPassphraseRefundAddressFilePath: path.resolve(os.homedir(), 'second-passphrase-addresses.txt'),
   votingAddressFilePath: path.resolve(os.homedir(), 'voting-addresses.txt'),
 })
 networkConfig.nethash = genesis.genesisBlock.payloadHash
