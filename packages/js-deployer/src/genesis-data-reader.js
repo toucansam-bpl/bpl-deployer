@@ -1,4 +1,7 @@
+const { Bignum, } = require('@arkecosystem/crypto')
 const { Client } = require('pg')
+const { curry } = require('ramda')
+
 const client = new Client()
 
 
@@ -6,10 +9,12 @@ module.exports = () =>
     new Promise(async (resolve, reject) => {
         try {
             await client.connect()
+            const addressBalances = await runAddressBalanceQuery()
             const delegateRegistrationRefundAddresses = await runAddressQuery(delegateRegistrationRefundAddressQuery)
             const secondPassphraseRefundAddresses = await runAddressQuery(secondPassphraseRefundAddressQuery)
             const voteRefundAddresses = await runAddressQuery(voteRefundAddressQuery)
             resolve({
+                addressBalances,
                 delegateRegistrationRefundAddresses,
                 secondPassphraseRefundAddresses,
                 voteRefundAddresses,
@@ -23,16 +28,24 @@ module.exports = () =>
         }
     })
 
-const runAddressQuery = queryText =>
-    async () => new Promise(async (resolve, reject) => {
+const runQuery = curry(
+    (transform, queryText) => new Promise(async (resolve, reject) => {
         try {
             const result = await client.query(queryText)
-            resolve(result.rows.map(r => r.address))
+            resolve(result.rows.map(transform))
         }
         catch (ex) {
             reject(ex)
         }
     })
+)
+
+const runAddressQuery = runQuery(row => row.address)
+const runAddressBalanceQuery = runQuery(row => ({
+    address: row.address,
+    balance: row.balance.toString().split('.')[0],
+    original: row.balance,
+}), 'SELECT address, balance FROM mem_accounts;')
 
 const voteRefundAddressQuery = `SELECT a.address, v.votes
     FROM mem_accounts a
