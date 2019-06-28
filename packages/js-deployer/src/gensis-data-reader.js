@@ -6,10 +6,9 @@ module.exports = () =>
     new Promise(async (resolve, reject) => {
         try {
             await client.connect()
-            const res = await client.query(voteRefundAddressQuery)
-            console.log(res.rows)
+            const voteRefundAddresses = await getVoteRefundAddresses()
             resolve({
-
+                voteRefundAddresses,
             })
         }
         catch (err) {
@@ -20,18 +19,23 @@ module.exports = () =>
         }
     })
 
-const voteRefundAddressQuery = `
-SELECT a.address, v.votes
-  FROM mem_accounts a
-  JOIN (
-    SELECT "senderPublicKey", count(1) as votes
-      FROM transactions
-     WHERE type = 3
-     GROUP BY "senderPublicKey"
-     HAVING count(1) % 2 = 1
-  ) v
-    ON a."publicKey" = v."senderPublicKey";
-`
+const getVoteRefundAddresses = async () => new Promise(async (resolve, reject) => {
+    try {
+        const result = await client.query(`SELECT a.address, v.votes
+            FROM mem_accounts a
+            JOIN (
+                SELECT "senderPublicKey", count(1) as votes
+                FROM transactions
+                WHERE type = 3
+                GROUP BY "senderPublicKey"
+                HAVING count(1) % 2 = 1
+            ) v
+                ON a."publicKey" = v."senderPublicKey";
+            `
+        )
+        return result.rows.map(r => r.address)
+    }
+})
 
 /*
 SELECT a.address
