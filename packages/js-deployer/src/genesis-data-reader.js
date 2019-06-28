@@ -41,7 +41,7 @@ const runQuery = curry(
 )
 
 const runAddressQuery = runQuery(row => row.address)
-const runAddressBalanceQuery = runQuery(row => ({
+const runAddressBalanceQuery = async () => runQuery(row => ({
     address: row.address,
     balance: row.balance.toString().split('.')[0],
     original: row.balance,
