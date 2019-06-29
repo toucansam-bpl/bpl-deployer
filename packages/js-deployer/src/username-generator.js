@@ -6,8 +6,8 @@ module.exports = mapFilePath => {
 
   return obj => {
     seq += 1
-    const username = keyMap[obj.keys.publicKey] || `genesis_${seq}`
-    
+    const username = keyMap[obj.keys.publicKey] || `seed_node_${seq}`
+
     return {
       ... obj,
 

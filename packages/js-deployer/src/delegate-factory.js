@@ -5,9 +5,9 @@ const generateDelegateTransaction = require('./delegate-transaction-generator')
 const generatePassphrase = require('./passphrase-generator')
 const generateUsernames = require('./username-generator')
 
-module.exports = (passphraseFilePath, keyMapFilePath) => {
-  const passphrases = generatePassphrase(passphraseFilePath)
-  const getNextUsername = generateUsernames(keyMapFilePath)
+module.exports = () => {
+  const passphrases = generatePassphrase()
+  const getNextUsername = generateUsernames()
   const createWallet = walletFactory(() => ({ passphrase: passphrases.next().value, }))
 
   return pipe(

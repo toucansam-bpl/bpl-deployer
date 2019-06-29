@@ -2,38 +2,33 @@ const { Bignum, client, crypto, } = require('@arkecosystem/crypto')
 
 const generateSequence = require('./sequence-generator')
 
-const readAddressBalanceFile = require('./address-balance-file-reader')
-const readAddressFile = require('./address-file-reader')
 const delegateFactory = require('./delegate-factory')
 const generatePassphrase = require('./passphrase-generator')
 const genesisBlockFactory = require('./genesis-block-factory')
 const walletFactory = require('./wallet-factory')
 
 module.exports = ({
-        addressBalanceFilePath,
+        addressBalances,
         delegateCount,
-        delegateRefundAddressFilePath,
-        keyMapFilePath,
-        passphraseFilePath,
-        secondPassphraseRefundAddressFilePath,
-        votingAddressFilePath,
+        delegateRegistrationRefundAddresses,
+        secondPassphraseRefundAddresses,
+        votingRefundAddresses,
     }) => {
-  const createDelegate = delegateFactory(passphraseFilePath, keyMapFilePath)
+  const createDelegate = delegateFactory()
   const passphrases = generatePassphrase()
   const createWallet = walletFactory(() => ({ passphrase: passphrases.next().value }))
 
   const genesisWallet = createWallet()
   const premineWallet = createWallet()
-  const balanceTransfers = readAddressBalanceFile(addressBalanceFilePath)
-    .map(createTransferTransaction(premineWallet))
+  const balanceTransfers = addressBalances.map(createTransferTransaction(premineWallet))
 
-  const delegateRegistrationRefunds = readAddressFile(delegateRefundAddressFilePath)
+  const delegateRegistrationRefunds = delegateRegistrationRefundAddresses
     .map(createDelegateRegistrationRefundTransaction(premineWallet))
 
-  const secondPassphraseRefunds = readAddressFile(secondPassphraseRefundAddressFilePath)
+  const secondPassphraseRefunds = secondPassphraseRefundAddresses
     .map(createSecondPassphraseRefundTransaction(premineWallet))
 
-  const voteRefunds = readAddressFile(votingAddressFilePath)
+  const voteRefunds = votingRefundAddresses
     .map(createVoteRefundTransaction(premineWallet))
 
   const delegates = generateSequence(delegateCount).map(createDelegate)

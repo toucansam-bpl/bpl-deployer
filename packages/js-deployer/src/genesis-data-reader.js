@@ -43,8 +43,7 @@ const runQuery = curry(
 const runAddressQuery = runQuery(row => row.address)
 const runAddressBalanceQuery = async () => runQuery(row => ({
     address: row.address,
-    balance: row.balance.toString().split('.')[0],
-    original: row.balance,
+    balance: Bignum(row.balance.toString().split('.')[0]),
 }), 'SELECT address, balance FROM mem_accounts;')
 
 const voteRefundAddressQuery = `SELECT a.address, v.votes
