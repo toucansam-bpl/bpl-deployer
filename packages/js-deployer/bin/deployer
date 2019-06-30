@@ -14,7 +14,7 @@ const updateConfig = require('../lib/utils/update-config')
 const writeEnv = require('../lib/utils/write-env')
 
 const createGenesisBlock = require('../src/genesis-block-generator')
-const genesisDataReader = require('./genesis-data-reader')
+const genesisDataReader = require('../src/genesis-data-reader')
 
 commander
   .version(require('../package.json').version)

@@ -1,8 +1,14 @@
 const { Bignum, } = require('@arkecosystem/crypto')
+const { readFileSync } = require('fs')
+const { homedir } = require('os')
 const { Client } = require('pg')
+const { resolve } = require('path')
 const { curry } = require('ramda')
 
-const client = new Client()
+const v1ConfigPath = resolve(homedir(), 'BPL-node', 'config.mainnet.json')
+const v1Config = JSON.parse(readFileSync(v1ConfigPath).toString())
+
+const client = new Client(v1Config.db)
 
 
 module.exports = () =>

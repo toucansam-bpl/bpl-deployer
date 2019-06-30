@@ -12,7 +12,7 @@ module.exports = ({
         delegateCount,
         delegateRegistrationRefundAddresses,
         secondPassphraseRefundAddresses,
-        votingRefundAddresses,
+        voteRefundAddresses,
     }) => {
   const createDelegate = delegateFactory()
   const passphrases = generatePassphrase()
@@ -28,7 +28,7 @@ module.exports = ({
   const secondPassphraseRefunds = secondPassphraseRefundAddresses
     .map(createSecondPassphraseRefundTransaction(premineWallet))
 
-  const voteRefunds = votingRefundAddresses
+  const voteRefunds = voteRefundAddresses
     .map(createVoteRefundTransaction(premineWallet))
 
   const delegates = generateSequence(delegateCount).map(createDelegate)
