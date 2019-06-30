@@ -68,365 +68,369 @@ commander
   .option('--feeDynamicBytesDelegateResignation <value>', 'Fee Bytes for Delegate Resignation transaction', 400000)
   .parse(process.argv)
 
-// Validate Schema
-const { error, value } = Joi.validate(commander, require('../lib/schema.js'), {
-  allowUnknown: true,
-  convert: true,
-})
+async function run() {
+  // Validate Schema
+  const { error, value } = Joi.validate(commander, require('../lib/schema.js'), {
+    allowUnknown: true,
+    convert: true,
+  })
 
-if (error) {
-  error.details.forEach(detail => logger.error(detail.message))
-  process.exit(1)
-}
-
-// Store validated schema
-const options = value
-
-// Check whether config path already exists
-if (fs.existsSync(options.configPath)) {
-  if (options.overwriteConfig) {
-    fs.removeSync(options.configPath)
-  } else {
-    logger.error(
-      `Deployer config already exists in '${
-        options.configPath
-      }' - to overwrite, use the '--overwriteConfig' flag`,
-    )
+  if (error) {
+    error.details.forEach(detail => logger.error(detail.message))
     process.exit(1)
   }
-}
 
-// Store original network paths
-const oldCoreNetworkPath = path.resolve(options.corePath, `packages/core/bin/config/${options.network}`)
-const oldCryptoNetworkPath = path.resolve(options.corePath, `packages/crypto/src/networks/${options.network}`)
+  // Store validated schema
+  const options = value
 
-// Check network to copy exists
-if (!fs.existsSync(oldCoreNetworkPath) || !fs.existsSync(oldCryptoNetworkPath)) {
-  logger.error(`Network '${options.network}' does not exist`)
-  process.exit(1)
-}
-
-// Create config path
-fs.ensureDirSync(options.configPath)
-
-const coreNetworkPath = path.resolve(options.configPath, 'core/')
-const cryptoNetworkPath = path.resolve(options.configPath, 'crypto/')
-
-// Copy core config
-fs.copySync(oldCoreNetworkPath, coreNetworkPath)
-
-// Copy crypto config
-fs.copySync(oldCryptoNetworkPath, cryptoNetworkPath)
-
-let networkConfig = {
-  name: options.network,
-  messagePrefix: `${options.token} message:\n`,
-  bip32: {
-    "public": 46090600,
-    "private": 46089520,
-  },
-  pubKeyHash: options.prefixHash,
-  wif: options.wifPrefix,
-  client: {
-    token: options.token,
-    symbol: options.symbol,
-    explorer: options.explorerUrl
+  // Check whether config path already exists
+  if (fs.existsSync(options.configPath)) {
+    if (options.overwriteConfig) {
+      fs.removeSync(options.configPath)
+    } else {
+      logger.error(
+        `Deployer config already exists in '${
+          options.configPath
+        }' - to overwrite, use the '--overwriteConfig' flag`,
+      )
+      process.exit(1)
+    }
   }
-}
 
-let milestones = [
-  {
-    height: 1,
-    reward: 0,
-    activeDelegates: options.forgers,
-    blocktime: options.blocktime,
-    block: {
-      version: 0,
-      maxTransactions: options.transactionsPerBlock,
-      maxPayload: (2097152 / 50) * options.transactionsPerBlock
-    },
-    epoch: options.epoch,
-    fees: {
-      staticFees: {
-        transfer: options.feeStaticTransfer,
-        secondSignature: options.feeStaticSecondSignature,
-        delegateRegistration: options.feeStaticDelegateRegistration,
-        vote: options.feeStaticVote,
-        multiSignature: options.feeStaticMultiSignature,
-        ipfs: 0,
-        timelockTransfer: 0,
-        multiPayment: 0,
-        delegateResignation: 0
-      }
-    },
-    vendorFieldLength: options.vendorFieldLength
+  // Store original network paths
+  const oldCoreNetworkPath = path.resolve(options.corePath, `packages/core/bin/config/${options.network}`)
+  const oldCryptoNetworkPath = path.resolve(options.corePath, `packages/crypto/src/networks/${options.network}`)
+
+  // Check network to copy exists
+  if (!fs.existsSync(oldCoreNetworkPath) || !fs.existsSync(oldCryptoNetworkPath)) {
+    logger.error(`Network '${options.network}' does not exist`)
+    process.exit(1)
   }
-]
 
-// Update network config
-networkConfig = updateConfig('network.json', networkConfig, cryptoNetworkPath)
+  // Create config path
+  fs.ensureDirSync(options.configPath)
 
-// const genesis = new GenesisBlockBuilder(networkConfig, options).generate()
-const genesisData = await genesisDataReader()
-const genesis = createGenesisBlock({
-  ... genesisData,
+  const coreNetworkPath = path.resolve(options.configPath, 'core/')
+  const cryptoNetworkPath = path.resolve(options.configPath, 'crypto/')
 
-  delegateCount: options.forgers,
-})
-networkConfig.nethash = genesis.genesisBlock.payloadHash
+  // Copy core config
+  fs.copySync(oldCoreNetworkPath, coreNetworkPath)
 
-updateConfig('network.json', networkConfig, cryptoNetworkPath)
+  // Copy crypto config
+  fs.copySync(oldCryptoNetworkPath, cryptoNetworkPath)
 
-// Update milestones config
-if (options.rewardHeight <= 1) {
-  milestones[0].reward = options.rewardPerBlock
-} else if (options.rewardHeight > 1) {
-  milestones.push({
-    height: options.rewardHeight,
-    reward: options.rewardPerBlock
+  let networkConfig = {
+    name: options.network,
+    messagePrefix: `${options.token} message:\n`,
+    bip32: {
+      "public": 46090600,
+      "private": 46089520,
+    },
+    pubKeyHash: options.prefixHash,
+    wif: options.wifPrefix,
+    client: {
+      token: options.token,
+      symbol: options.symbol,
+      explorer: options.explorerUrl
+    }
+  }
+
+  let milestones = [
+    {
+      height: 1,
+      reward: 0,
+      activeDelegates: options.forgers,
+      blocktime: options.blocktime,
+      block: {
+        version: 0,
+        maxTransactions: options.transactionsPerBlock,
+        maxPayload: (2097152 / 50) * options.transactionsPerBlock
+      },
+      epoch: options.epoch,
+      fees: {
+        staticFees: {
+          transfer: options.feeStaticTransfer,
+          secondSignature: options.feeStaticSecondSignature,
+          delegateRegistration: options.feeStaticDelegateRegistration,
+          vote: options.feeStaticVote,
+          multiSignature: options.feeStaticMultiSignature,
+          ipfs: 0,
+          timelockTransfer: 0,
+          multiPayment: 0,
+          delegateResignation: 0
+        }
+      },
+      vendorFieldLength: options.vendorFieldLength
+    }
+  ]
+
+  // Update network config
+  networkConfig = updateConfig('network.json', networkConfig, cryptoNetworkPath)
+
+  // const genesis = new GenesisBlockBuilder(networkConfig, options).generate()
+  const genesisData = await genesisDataReader()
+  const genesis = createGenesisBlock({
+    ... genesisData,
+
+    delegateCount: options.forgers,
   })
-}
+  networkConfig.nethash = genesis.genesisBlock.payloadHash
 
-updateConfig('milestones.json', milestones, cryptoNetworkPath, true)
+  updateConfig('network.json', networkConfig, cryptoNetworkPath)
 
-// Update exceptions config
-updateConfig(
-  'exceptions.json',
-  {
-    blocks: [],
-    transactions: [],
-    outlookTable: {},
-    transactionIdFixTable: {}
-  },
-  cryptoNetworkPath
-)
+  // Update milestones config
+  if (options.rewardHeight <= 1) {
+    milestones[0].reward = options.rewardPerBlock
+  } else if (options.rewardHeight > 1) {
+    milestones.push({
+      height: options.rewardHeight,
+      reward: options.rewardPerBlock
+    })
+  }
 
-// Update peers config
-const peerConfig = {
-  list: [],
-  sources: []
-}
-if (options.peers) {
-  for (const ip of options.peers.split(',')) {
+  updateConfig('milestones.json', milestones, cryptoNetworkPath, true)
+
+  // Update exceptions config
+  updateConfig(
+    'exceptions.json',
+    {
+      blocks: [],
+      transactions: [],
+      outlookTable: {},
+      transactionIdFixTable: {}
+    },
+    cryptoNetworkPath
+  )
+
+  // Update peers config
+  const peerConfig = {
+    list: [],
+    sources: []
+  }
+  if (options.peers) {
+    for (const ip of options.peers.split(',')) {
+      peerConfig.list.push({
+        ip: ip.trim(),
+        port: options.p2pPort
+      })
+    }
+  } else {
     peerConfig.list.push({
-      ip: ip.trim(),
+      ip: options.coreIp === '0.0.0.0' ? '127.0.0.1' : options.coreIp,
       port: options.p2pPort
     })
   }
-} else {
-  peerConfig.list.push({
-    ip: options.coreIp === '0.0.0.0' ? '127.0.0.1' : options.coreIp,
-    port: options.p2pPort
-  })
-}
-updateConfig('peers.json', peerConfig, coreNetworkPath)
+  updateConfig('peers.json', peerConfig, coreNetworkPath)
 
-// Update genesis block
-updateConfig(
-  'genesisBlock.json',
-  genesis.genesisBlock,
-  cryptoNetworkPath,
-  true
-)
+  // Update genesis block
+  updateConfig(
+    'genesisBlock.json',
+    genesis.genesisBlock,
+    cryptoNetworkPath,
+    true
+  )
 
-// Store genesis wallet config
-updateConfig(
-  'genesisWallet.json',
-  {
-    address: genesis.genesisWallet.address,
-    passphrase: genesis.genesisWallet.passphrase,
-  },
-  options.configPath,
-  true,
-)
+  // Store genesis wallet config
+  updateConfig(
+    'genesisWallet.json',
+    {
+      address: genesis.genesisWallet.address,
+      passphrase: genesis.genesisWallet.passphrase,
+    },
+    options.configPath,
+    true,
+  )
 
-// Store delegate passphrase config
-updateConfig(
-  'delegates.json',
-  {
-    secrets: genesis.delegatePassphrases,
-  },
-  options.configPath,
-  true,
-)
+  // Store delegate passphrase config
+  updateConfig(
+    'delegates.json',
+    {
+      secrets: genesis.delegatePassphrases,
+    },
+    options.configPath,
+    true,
+  )
 
-// Update plugins config
-let pluginsConfig = fs.readFileSync(path.resolve(coreNetworkPath, 'plugins.js')).toString()
-const pluginsToUpdate = [
-  // Database config
-  {
-    from: /process\.env\.CORE_DB_HOST \|\| "(\w+)"/g,
-    to: `process.env.CORE_DB_HOST || "${options.dbHost}"`
-  },
-  {
-    from: /process\.env\.CORE_DB_PORT \|\| (\d+)/g,
-    to: `process.env.CORE_DB_PORT || ${options.dbPort}`
-  },
-  {
-    from: /process\.env\.CORE_DB_PASSWORD \|\| "(.+)"/g,
-    to: `process.env.CORE_DB_PASSWORD || "${options.dbPassword}"`
-  },
-  // P2P config
-  {
-    from: /process\.env\.CORE_P2P_HOST \|\| "(.+)"/g,
-    to: `process.env.CORE_P2P_HOST || "${options.coreIp}"`
-  },
-  {
-    from: /process\.env\.CORE_P2P_PORT \|\| (\d+)/g,
-    to: `process.env.CORE_P2P_PORT || ${options.p2pPort}`
-  },
-  // API config
-  {
-    from: /process\.env\.CORE_API_HOST \|\| "(.+)"/g,
-    to: `process.env.CORE_API_HOST || "${options.coreIp}"`
-  },
-  {
-    from: /process\.env\.CORE_API_PORT \|\| (\d+)/g,
-    to: `process.env.CORE_API_PORT || ${options.apiPort}`
-  },
-  // Webhook config
-  {
-    from: /process\.env\.CORE_WEBHOOKS_HOST \|\| "(.+)"/g,
-    to: `process.env.CORE_WEBHOOKS_HOST || "${options.coreIp}"`
-  },
-  {
-    from: /process\.env\.CORE_WEBHOOKS_PORT \|\| (\d+)/g,
-    to: `process.env.CORE_WEBHOOKS_PORT || ${options.webhookPort}`
-  },
-  // JSON RPC config
-  {
-    from: /process\.env\.CORE_JSON_RPC_HOST \|\| "(.+)"/g,
-    to: `process.env.CORE_JSON_RPC_HOST || "${options.coreIp}"`
-  },
-  {
-    from: /process\.env\.CORE_JSON_RPC_PORT \|\| (\d+)/g,
-    to: `process.env.CORE_JSON_RPC_PORT || ${options.jsonRpcPort}`
-  },
-  // Dynamic Fees
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*enabled: )(true|false+)/g,
-    to: `$1${options.feeDynamicEnabled}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*minFeePool: )([0-9]+)/g,
-    to: `$1${options.feeDynamicPoolMinFee}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*minFeeBroadcast: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBroadcastMinFee}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*transfer: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesTransfer}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*secondSignature: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesSecondSignature}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*delegateRegistration: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesDelegateRegistration}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*vote: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesVote}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*multiSignature: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesMultiSignature}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*ipfs: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesIpfs}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*timelockTransfer: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesTimelockTransfer}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*multiPayment: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesMultiPayment}`
-  },
-  {
-    from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*delegateResignation: )([0-9]+)/g,
-    to: `$1${options.feeDynamicBytesDelegateResignation}`
+  // Update plugins config
+  let pluginsConfig = fs.readFileSync(path.resolve(coreNetworkPath, 'plugins.js')).toString()
+  const pluginsToUpdate = [
+    // Database config
+    {
+      from: /process\.env\.CORE_DB_HOST \|\| "(\w+)"/g,
+      to: `process.env.CORE_DB_HOST || "${options.dbHost}"`
+    },
+    {
+      from: /process\.env\.CORE_DB_PORT \|\| (\d+)/g,
+      to: `process.env.CORE_DB_PORT || ${options.dbPort}`
+    },
+    {
+      from: /process\.env\.CORE_DB_PASSWORD \|\| "(.+)"/g,
+      to: `process.env.CORE_DB_PASSWORD || "${options.dbPassword}"`
+    },
+    // P2P config
+    {
+      from: /process\.env\.CORE_P2P_HOST \|\| "(.+)"/g,
+      to: `process.env.CORE_P2P_HOST || "${options.coreIp}"`
+    },
+    {
+      from: /process\.env\.CORE_P2P_PORT \|\| (\d+)/g,
+      to: `process.env.CORE_P2P_PORT || ${options.p2pPort}`
+    },
+    // API config
+    {
+      from: /process\.env\.CORE_API_HOST \|\| "(.+)"/g,
+      to: `process.env.CORE_API_HOST || "${options.coreIp}"`
+    },
+    {
+      from: /process\.env\.CORE_API_PORT \|\| (\d+)/g,
+      to: `process.env.CORE_API_PORT || ${options.apiPort}`
+    },
+    // Webhook config
+    {
+      from: /process\.env\.CORE_WEBHOOKS_HOST \|\| "(.+)"/g,
+      to: `process.env.CORE_WEBHOOKS_HOST || "${options.coreIp}"`
+    },
+    {
+      from: /process\.env\.CORE_WEBHOOKS_PORT \|\| (\d+)/g,
+      to: `process.env.CORE_WEBHOOKS_PORT || ${options.webhookPort}`
+    },
+    // JSON RPC config
+    {
+      from: /process\.env\.CORE_JSON_RPC_HOST \|\| "(.+)"/g,
+      to: `process.env.CORE_JSON_RPC_HOST || "${options.coreIp}"`
+    },
+    {
+      from: /process\.env\.CORE_JSON_RPC_PORT \|\| (\d+)/g,
+      to: `process.env.CORE_JSON_RPC_PORT || ${options.jsonRpcPort}`
+    },
+    // Dynamic Fees
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*enabled: )(true|false+)/g,
+      to: `$1${options.feeDynamicEnabled}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*minFeePool: )([0-9]+)/g,
+      to: `$1${options.feeDynamicPoolMinFee}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*minFeeBroadcast: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBroadcastMinFee}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*transfer: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesTransfer}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*secondSignature: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesSecondSignature}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*delegateRegistration: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesDelegateRegistration}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*vote: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesVote}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*multiSignature: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesMultiSignature}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*ipfs: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesIpfs}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*timelockTransfer: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesTimelockTransfer}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*multiPayment: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesMultiPayment}`
+    },
+    {
+      from: /(dynamicFees: {[a-zA-Z0-9: ,\n{}]*addonBytes: {[a-zA-Z0-9: ,\n{}]*delegateResignation: )([0-9]+)/g,
+      to: `$1${options.feeDynamicBytesDelegateResignation}`
+    }
+  ]
+
+  for (const replacement of pluginsToUpdate) {
+    pluginsConfig = pluginsConfig.replace(replacement.from, replacement.to)
   }
-]
 
-for (const replacement of pluginsToUpdate) {
-  pluginsConfig = pluginsConfig.replace(replacement.from, replacement.to)
-}
-
-if (options.network === 'testnet') {
-  pluginsConfig = pluginsConfig.replace(/(minimumNetworkReach:) [0-9]+/g, `$1 2`)
-}
-
-fs.writeFileSync(path.resolve(coreNetworkPath, 'plugins.js'), pluginsConfig)
-
-// Update env config
-let envConfig = fs.readFileSync(path.resolve(coreNetworkPath, '.env')).toString()
-const envToUpdate = [
-  // Database config
-  {
-    from: /^CORE_DB_HOST=.+$/m,
-    to: `CORE_DB_HOST=${options.dbHost}`
-  },
-  {
-    from: /^CORE_DB_PORT=.+$/m,
-    to: `CORE_DB_PORT=${options.dbPort}`
-  },
-  // P2P config
-  {
-    from: /^CORE_P2P_HOST=.+$/m,
-    to: `CORE_P2P_HOST=${options.coreIp}`
-  },
-  {
-    from: /^CORE_P2P_PORT=.+$/m,
-    to: `CORE_P2P_PORT=${options.p2pPort}`
-  },
-  // API config
-  {
-    from: /^CORE_API_HOST=.+$/m,
-    to: `CORE_API_HOST=${options.coreIp}`
-  },
-  {
-    from: /^CORE_API_PORT=.+$/m,
-    to: `CORE_API_PORT=${options.apiPort}`
-  },
-  // Webhook config
-  {
-    from: /^CORE_WEBHOOKS_HOST=.+$/m,
-    to: `CORE_WEBHOOKS_HOST=${options.coreIp}`
-  },
-  {
-    from: /^CORE_WEBHOOKS_PORT=.+$/m,
-    to: `CORE_WEBHOOKS_PORT=${options.webhookPort}`
-  },
-  // JSON RPC config
-  {
-    from: /^CORE_JSON_RPC_HOST=.+$/m,
-    to: `CORE_JSON_RPC_HOST=${options.coreIp}`
-  },
-  {
-    from: /^CORE_JSON_RPC_PORT=.+$/m,
-    to: `CORE_JSON_RPC_PORT=${options.jsonRpcPort}`
+  if (options.network === 'testnet') {
+    pluginsConfig = pluginsConfig.replace(/(minimumNetworkReach:) [0-9]+/g, `$1 2`)
   }
-]
 
-if (/^CORE_DB_USERNAME=.+$/m.test(envConfig)) {
-  envConfig = envConfig.replace(/^CORE_DB_USERNAME=.+$/m, `CORE_DB_USERNAME=${options.dbUsername}`)
-} else {
-  envConfig = envConfig.replace(/^(CORE_DB_PORT=.+)$/m, `$1\nCORE_DB_USERNAME=${options.dbUsername}`)
+  fs.writeFileSync(path.resolve(coreNetworkPath, 'plugins.js'), pluginsConfig)
+
+  // Update env config
+  let envConfig = fs.readFileSync(path.resolve(coreNetworkPath, '.env')).toString()
+  const envToUpdate = [
+    // Database config
+    {
+      from: /^CORE_DB_HOST=.+$/m,
+      to: `CORE_DB_HOST=${options.dbHost}`
+    },
+    {
+      from: /^CORE_DB_PORT=.+$/m,
+      to: `CORE_DB_PORT=${options.dbPort}`
+    },
+    // P2P config
+    {
+      from: /^CORE_P2P_HOST=.+$/m,
+      to: `CORE_P2P_HOST=${options.coreIp}`
+    },
+    {
+      from: /^CORE_P2P_PORT=.+$/m,
+      to: `CORE_P2P_PORT=${options.p2pPort}`
+    },
+    // API config
+    {
+      from: /^CORE_API_HOST=.+$/m,
+      to: `CORE_API_HOST=${options.coreIp}`
+    },
+    {
+      from: /^CORE_API_PORT=.+$/m,
+      to: `CORE_API_PORT=${options.apiPort}`
+    },
+    // Webhook config
+    {
+      from: /^CORE_WEBHOOKS_HOST=.+$/m,
+      to: `CORE_WEBHOOKS_HOST=${options.coreIp}`
+    },
+    {
+      from: /^CORE_WEBHOOKS_PORT=.+$/m,
+      to: `CORE_WEBHOOKS_PORT=${options.webhookPort}`
+    },
+    // JSON RPC config
+    {
+      from: /^CORE_JSON_RPC_HOST=.+$/m,
+      to: `CORE_JSON_RPC_HOST=${options.coreIp}`
+    },
+    {
+      from: /^CORE_JSON_RPC_PORT=.+$/m,
+      to: `CORE_JSON_RPC_PORT=${options.jsonRpcPort}`
+    }
+  ]
+
+  if (/^CORE_DB_USERNAME=.+$/m.test(envConfig)) {
+    envConfig = envConfig.replace(/^CORE_DB_USERNAME=.+$/m, `CORE_DB_USERNAME=${options.dbUsername}`)
+  } else {
+    envConfig = envConfig.replace(/^(CORE_DB_PORT=.+)$/m, `$1\nCORE_DB_USERNAME=${options.dbUsername}`)
+  }
+
+  if (/^CORE_DB_DATABASE=.+$/m.test(envConfig)) {
+    envConfig = envConfig.replace(/^CORE_DB_DATABASE=.+$/m, `CORE_DB_DATABASE=${options.dbDatabase}`)
+  } else {
+    envConfig = envConfig.replace(/^(CORE_DB_USERNAME=.+)$/m, `$1\nCORE_DB_DATABASE=${options.dbDatabase}`)
+  }
+
+  for (const replacement of envToUpdate) {
+    envConfig = envConfig.replace(replacement.from, replacement.to)
+  }
+
+  fs.writeFileSync(path.resolve(coreNetworkPath, '.env'), envConfig)
 }
 
-if (/^CORE_DB_DATABASE=.+$/m.test(envConfig)) {
-  envConfig = envConfig.replace(/^CORE_DB_DATABASE=.+$/m, `CORE_DB_DATABASE=${options.dbDatabase}`)
-} else {
-  envConfig = envConfig.replace(/^(CORE_DB_USERNAME=.+)$/m, `$1\nCORE_DB_DATABASE=${options.dbDatabase}`)
-}
-
-for (const replacement of envToUpdate) {
-  envConfig = envConfig.replace(replacement.from, replacement.to)
-}
-
-fs.writeFileSync(path.resolve(coreNetworkPath, '.env'), envConfig)
+run()
