@@ -15,7 +15,7 @@ module.exports = () =>
     new Promise(async (resolve, reject) => {
         try {
             await client.connect()
-            const addressBalances = await runAddressBalanceQuery()
+            const addressBalances = await runAddressBalanceQuery().filter(ab => ab.gt(0))
             const delegateRegistrationRefundAddresses = await runAddressQuery(delegateRegistrationRefundAddressQuery)
             const secondPassphraseRefundAddresses = await runAddressQuery(secondPassphraseRefundAddressQuery)
             const voteRefundAddresses = await runAddressQuery(voteRefundAddressQuery)
