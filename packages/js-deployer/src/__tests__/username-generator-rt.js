@@ -18,7 +18,7 @@ describe('username generator', async assert => {
       keys: {
         publicKey: 'bye',
       },
-      username: 'genesis_1'
+      username: 'seed_node_1'
     },
   })
 
@@ -34,7 +34,7 @@ describe('username generator', async assert => {
       keys: {
         publicKey: 'hi'
       },
-      username: 'genesis_2',
+      username: 'seed_node_2',
     },
   })
 })
@@ -86,7 +86,7 @@ describe('username generator with a supplied filename', async assert => {
       keys: {
         publicKey: 'yo',
       },
-      username: 'genesis_3'
+      username: 'seed_node_3'
     },
   })
 })
