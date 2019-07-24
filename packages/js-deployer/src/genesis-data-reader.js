@@ -20,7 +20,7 @@ module.exports = () =>
             const secondPassphraseRefundAddresses = await runAddressQuery(secondPassphraseRefundAddressQuery)
             const voteRefundAddresses = await runAddressQuery(voteRefundAddressQuery)
             resolve({
-                addressBalances: addressBalances.filter(ab => ab > 0),
+                addressBalances: addressBalances.filter(ab => ab.balance.gt(0)),
                 delegateRegistrationRefundAddresses,
                 secondPassphraseRefundAddresses,
                 voteRefundAddresses,
