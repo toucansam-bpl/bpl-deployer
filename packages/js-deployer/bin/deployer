@@ -16,6 +16,7 @@ const writeEnv = require('../lib/utils/write-env')
 
 const createGenesisBlock = require('../src/genesis-block-generator')
 const genesisDataReader = require('../src/genesis-data-reader')
+const calculateMilestones = require('../src/milestone-calculator')
 
 commander
   .version(require('../package.json').version)
